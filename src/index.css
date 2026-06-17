@@ -1,0 +1,42 @@
+/* الألوان الافتراضية للـ Light Mode */
+:root {
+  --background: #f8fafc;
+  --surface: rgba(255, 255, 255, 0.7); /* تأثير زجاجي خفيف */
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --primary: #6366f1; /* لون نيون هادي */
+  --border: rgba(0, 0, 0, 0.08);
+  --glass-blur: blur(12px);
+}
+
+/* الألوان عند تفعيل الـ Dark Mode (ستايل كيبـر بانك داكن) */
+[data-theme="dark"] {
+  --background: #0a0a12; /* أسود عميق مائل للأزرق */
+  --surface: rgba(15, 15, 30, 0.6); /* زجاج داكن */
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --primary: #00f0ff; /* نيون سيان Cyberpunk */
+  --border: rgba(0, 240, 255, 0.15); /* حواف نيون مضيئة خفيفة */
+  --glass-blur: blur(16px);
+}
+
+/* تطبيق الألوان على الجسم الرئيسي للموقع */
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--background);
+  color: var(--text-main);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* كلاس جاهز وموحد لأي كارت زجاجي (Glassmorphism) هنستخدمه */
+.glass-card {
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
