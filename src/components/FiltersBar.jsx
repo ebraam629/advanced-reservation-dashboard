@@ -1,93 +1,134 @@
 /* eslint-disable */
-import { Search, Filter } from "lucide-react";
-import { useLanguage } from "../context/LanguageContext"; // استيراد
+import React from "react";
+import { Search, Calendar } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 
-export default function FiltersBar({
+function FiltersBar({
   searchTerm,
   setSearchTerm,
   statusFilter,
   setStatusFilter,
+  dateFilter,
+  setDateFilter,
 }) {
-  const { t } = useLanguage(); // استخدام الـ قاموس
+  const { lang } = useLanguage();
+  const getTodayString = () => new Date().toLocaleDateString("fr-CA");
+
+  // ستايل موحد للخيارات عشان الكلام يبان أسود على خلفية بيضاء
+  const optionStyle = {
+    backgroundColor: "#ffffff",
+    color: "#0f172a",
+  };
 
   return (
     <div
       className="glass-card"
       style={{
         padding: "15px 20px",
-        marginBottom: "20px",
+        borderRadius: "12px",
         display: "flex",
         flexWrap: "wrap",
         gap: "15px",
-        justifyContent: "space-between",
         alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: "20px",
       }}
     >
+      {/* خانة البحث */}
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          flex: "1",
-          minWidth: "250px",
-          position: "relative",
-        }}
+        style={{ display: "flex", gap: "10px", flex: "1", minWidth: "250px" }}
       >
-        {/* شيلنا الـ position المكتوب يدوي عشان يمشي مع الاتجاهين */}
-        <Search
-          size={18}
-          color="var(--text-muted)"
-          style={{ position: "absolute", margin: "0 12px" }}
-        />
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder={t.searchPlaceholder} // ترجمة
-          style={{
-            width: "100%",
-            padding: "10px 40px",
-            borderRadius: "8px",
-            border: "1px solid var(--border)",
-            background: "rgba(0,0,0,0.1)",
-            color: "var(--text-main)",
-            outline: "none",
-            fontSize: "14px",
-          }}
-        />
+        <div style={{ position: "relative", width: "100%" }}>
+          <Search
+            size={18}
+            style={{
+              position: "absolute",
+              left: lang === "ar" ? "auto" : "12px",
+              right: lang === "ar" ? "12px" : "auto",
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "var(--text-muted)",
+            }}
+          />
+          <input
+            type="text"
+            placeholder={
+              lang === "ar" ? "ابحث عن اسم المريض..." : "Search patient name..."
+            }
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px 15px",
+              paddingLeft: lang === "ar" ? "15px" : "40px",
+              paddingRight: lang === "ar" ? "40px" : "15px",
+              borderRadius: "8px",
+              border: "1px solid var(--border-color)",
+              backgroundColor: "rgba(255, 255, 255, 0.05)",
+              color: "var(--text-main)",
+              outline: "none",
+            }}
+          />
+        </div>
       </div>
 
       <div
         style={{
           display: "flex",
+          flexWrap: "wrap",
+          gap: "12px",
           alignItems: "center",
-          gap: "10px",
-          minWidth: "180px",
         }}
       >
-        <Filter size={18} color="var(--text-muted)" />
+        {/* خانة التاريخ */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <Calendar size={18} color="var(--primary)" />
+          <input
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            style={{
+              padding: "8px 12px",
+              borderRadius: "8px",
+              border: "1px solid var(--border-color)",
+              backgroundColor: "rgba(255, 255, 255, 0.05)",
+              color: "var(--text-main)",
+              cursor: "pointer",
+              outline: "none",
+            }}
+          />
+        </div>
+
+        {/* فلتر الحالة */}
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           style={{
-            width: "100%",
-            padding: "10px",
+            backgroundColor: "#ffffff", // خليناه أبيض عشان يليق مع لوحة التحكم البيضاء
+            color: "#0f172a", // لون النص الأساسي للـ select
+            padding: "8px 12px",
             borderRadius: "8px",
-            border: "1px solid var(--border)",
-            background: "var(--background)",
-            color: "var(--text-main)",
+            border: "1px solid var(--border-color)",
             outline: "none",
             cursor: "pointer",
-            fontSize: "14px",
           }}
         >
-          <option value="all">{t.allReservations}</option>
-          <option value="confirmed">{t.confirmed}</option>
-          <option value="pending">{t.pending}</option>
-          <option value="completed">{t.completed}</option>
-          <option value="cancelled">{t.cancelled}</option>
+          <option value="all" style={optionStyle}>
+            {lang === "ar" ? "كل الحالات" : "All Status"}
+          </option>
+          <option value="confirmed" style={optionStyle}>
+            {lang === "ar" ? "مؤكد" : "Confirmed"}
+          </option>
+          <option value="pending" style={optionStyle}>
+            {lang === "ar" ? "قيد الانتظار" : "Pending"}
+          </option>
+          <option value="cancelled" style={optionStyle}>
+            {lang === "ar" ? "ملغي" : "Cancelled"}
+          </option>
         </select>
       </div>
     </div>
   );
 }
+
+export default FiltersBar;

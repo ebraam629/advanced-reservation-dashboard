@@ -1,10 +1,8 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react"; // 👈 غيرنا السطر ده للمكتبة القياسية بتاعة Vite
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  server: {
-    overlay: false, // بيقفل الشاشة السوداء بتاعة الإيرورز الرخمة على المتصفح
-  },
+  base: "./", // 👈 السطر السحري بتاع الديسكتوب اللي ضفناه
 });

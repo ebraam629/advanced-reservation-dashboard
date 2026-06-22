@@ -1,173 +1,195 @@
 /* eslint-disable */
-import { Trash2, Edit, AlertCircle } from "lucide-react";
-import { useLanguage } from "../context/LanguageContext"; // استيراد
+import React from "react";
+import { Check, Trash2, Edit } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 
-export default function ReservationsTable({ reservations, onDelete, onEdit }) {
-  const { t } = useLanguage(); // استخدام
-
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case "confirmed":
-        return {
-          bg: "rgba(0, 240, 255, 0.1)",
-          color: "var(--primary)",
-          label: t.confirmed,
-        };
-      case "pending":
-        return {
-          bg: "rgba(234, 179, 8, 0.1)",
-          color: "#eab308",
-          label: t.pending,
-        };
-      case "completed":
-        return {
-          bg: "rgba(16, 185, 129, 0.1)",
-          color: "#10b981",
-          label: t.completed,
-        };
-      case "cancelled":
-        return {
-          bg: "rgba(239, 68, 110, 0.1)",
-          color: "#ef4444",
-          label: t.cancelled,
-        };
-      default:
-        return { bg: "gray", color: "white", label: status };
-    }
-  };
-
-  if (reservations.length === 0) {
-    return (
-      <div
-        className="glass-card"
-        style={{
-          padding: "40px",
-          textAlign: "center",
-          color: "var(--text-muted)",
-        }}
-      >
-        <AlertCircle
-          size={36}
-          style={{ marginBottom: "10px", color: "var(--text-muted)" }}
-        />
-        <p style={{ margin: 0 }}>{t.noData}</p>
-      </div>
-    );
-  }
+function ReservationsTable({
+  reservations = [],
+  onDelete,
+  onEdit,
+  onToggleStatus,
+}) {
+  const { lang } = useLanguage();
 
   return (
-    <div className="glass-card" style={{ overflowX: "auto", width: "100%" }}>
-      {/* التغيير هنا: خليناها تتوافق مع الاتجاهين أوتوماتيك بتشيل textAlign رايت */}
+    <div
+      className="glass-card"
+      style={{ borderRadius: "12px", overflowX: "auto", padding: "10px" }}
+    >
       <table
-        style={{ width: "100%", borderCollapse: "collapse", fontSize: "15px" }}
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          textAlign: lang === "ar" ? "right" : "left",
+        }}
       >
         <thead>
           <tr
             style={{
-              borderBottom: "1px solid var(--border)",
+              borderBottom: "1px solid var(--border-color)",
               color: "var(--text-muted)",
             }}
           >
-            <th style={{ padding: "16px", textAlign: "start" }}>{t.resId}</th>
-            <th style={{ padding: "16px", textAlign: "start" }}>
-              {t.custName}
+            <th style={{ padding: "12px" }}>
+              {lang === "ar" ? "اسم المريض" : "Patient Name"}
             </th>
-            <th style={{ padding: "16px", textAlign: "start" }}>{t.service}</th>
-            <th style={{ padding: "16px", textAlign: "start" }}>
-              {t.dateTime}
+            <th style={{ padding: "12px" }}>
+              {lang === "ar" ? "قيمة الكشف" : "Fees"}
             </th>
-            <th style={{ padding: "16px", textAlign: "start" }}>{t.price}</th>
-            <th style={{ padding: "16px", textAlign: "start" }}>{t.status}</th>
-            <th style={{ padding: "16px", textAlign: "center" }}>
-              {t.actions}
+            <th style={{ padding: "12px" }}>
+              {lang === "ar" ? "الحالة" : "Status"}
+            </th>
+            <th style={{ padding: "12px", textAlign: "center" }}>
+              {lang === "ar" ? "إجراء سريع" : "Actions"}
             </th>
           </tr>
         </thead>
         <tbody>
-          {reservations.map((res) => {
-            const statusConfig = getStatusStyle(res.status);
-            return (
-              <tr
-                key={res.id}
-                style={{ borderBottom: "1px solid var(--border)" }}
+          {reservations.length === 0 ? (
+            <tr>
+              <td
+                colSpan="4"
+                style={{
+                  textAlign: "center",
+                  padding: "20px",
+                  color: "var(--text-muted)",
+                }}
               >
-                <td
+                {lang === "ar"
+                  ? "لا توجد حجوزات لهذا اليوم بعد."
+                  : "No bookings for today."}
+              </td>
+            </tr>
+          ) : (
+            reservations.map((res) => {
+              const isConfirmed = res.status?.toLowerCase() === "confirmed";
+              return (
+                <tr
+                  key={res.id}
                   style={{
-                    padding: "16px",
-                    fontWeight: "bold",
-                    color: "var(--primary)",
+                    borderBottom: "1px solid rgba(255,255,255,0.05)",
+                    backgroundColor: isConfirmed
+                      ? "rgba(0, 255, 136, 0.03)"
+                      : "transparent",
                   }}
                 >
-                  {res.id}
-                </td>
-                <td style={{ padding: "16px" }}>{res.customerName}</td>
-                <td style={{ padding: "16px" }}>{res.service}</td>
-                <td style={{ padding: "16px" }}>
-                  <div>{res.date}</div>
-                  <div
+                  <td
                     style={{
-                      fontSize: "12px",
-                      color: "var(--text-muted)",
-                      marginTop: "2px",
+                      padding: "12px",
+                      fontWeight: "500",
+                      textDecoration: isConfirmed ? "line-through" : "none",
+                      color: isConfirmed
+                        ? "var(--text-muted)"
+                        : "var(--text-main)",
                     }}
                   >
-                    {res.time}
-                  </div>
-                </td>
-                <td style={{ padding: "16px", fontWeight: "bold" }}>
-                  {res.price} {t.currency}
-                </td>
-                <td style={{ padding: "16px" }}>
-                  <span
+                    {res.customerName}
+                  </td>
+                  <td
                     style={{
-                      padding: "6px 12px",
-                      borderRadius: "20px",
-                      fontSize: "12px",
+                      padding: "12px",
+                      color: "var(--primary)",
                       fontWeight: "bold",
-                      backgroundColor: statusConfig.bg,
-                      color: statusConfig.color,
-                      border: `1px solid ${statusConfig.color}20`,
                     }}
                   >
-                    {statusConfig.label}
-                  </span>
-                </td>
-                <td
-                  style={{
-                    padding: "16px",
-                    display: "flex",
-                    gap: "10px",
-                    justifyContent: "center",
-                  }}
-                >
-                  <button
-                    onClick={() => onEdit(res)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "var(--text-muted)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <Edit size={16} />
-                  </button>
-                  <button
-                    onClick={() => onDelete(res.id)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "#ef4444",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
+                    {res.price} ج.م
+                  </td>
+                  <td style={{ padding: "12px" }}>
+                    <span
+                      style={{
+                        padding: "4px 8px",
+                        borderRadius: "6px",
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        backgroundColor: isConfirmed
+                          ? "rgba(0, 255, 136, 0.1)"
+                          : "rgba(255, 187, 0, 0.1)",
+                        color: isConfirmed ? "#00ff88" : "#ffbb00",
+                      }}
+                    >
+                      {isConfirmed
+                        ? lang === "ar"
+                          ? "تم الكشف"
+                          : "Confirmed"
+                        : lang === "ar"
+                          ? "انتظار"
+                          : "Pending"}
+                    </span>
+                  </td>
+                  <td style={{ padding: "12px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "10px",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      {/* 🌟 زرار علامة الصح السحرية السريعة */}
+                      <button
+                        onClick={() =>
+                          onToggleStatus &&
+                          onToggleStatus(
+                            res.id,
+                            isConfirmed ? "Pending" : "Confirmed",
+                          )
+                        }
+                        title={isConfirmed ? "إرجاع للانتظار" : "تم الكشف"}
+                        style={{
+                          padding: "6px",
+                          borderRadius: "6px",
+                          border: "none",
+                          backgroundColor: isConfirmed
+                            ? "#00ff88"
+                            : "rgba(255,255,255,0.05)",
+                          color: isConfirmed ? "#000" : "#var(--text-main)",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "0.2s",
+                        }}
+                      >
+                        <Check size={16} />
+                      </button>
+
+                      <button
+                        onClick={() => onEdit(res)}
+                        style={{
+                          padding: "6px",
+                          borderRadius: "6px",
+                          border: "none",
+                          backgroundColor: "rgba(255,255,255,0.05)",
+                          color: "#00e5ff",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <Edit size={16} />
+                      </button>
+
+                      <button
+                        onClick={() => onDelete(res.id)}
+                        style={{
+                          padding: "6px",
+                          borderRadius: "6px",
+                          border: "none",
+                          backgroundColor: "rgba(255, 0, 85, 0.1)",
+                          color: "#ff0055",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })
+          )}
         </tbody>
       </table>
     </div>
   );
 }
+
+export default ReservationsTable;

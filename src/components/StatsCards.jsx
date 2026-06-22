@@ -1,54 +1,68 @@
 /* eslint-disable */
+import React from "react";
+import { useLanguage } from "../context/LanguageContext";
 import {
-  CalendarDays,
-  CheckCircle2,
+  Calendar,
+  CheckCircle,
   Clock,
   XCircle,
   DollarSign,
 } from "lucide-react";
-import { useLanguage } from "../context/LanguageContext"; // استيراد
 
-export default function StatsCards({ reservations }) {
-  const { t } = useLanguage(); // استخدام
+function StatsCards({ reservations = [] }) {
+  const { lang } = useLanguage();
+
+  // 🎯 الحسبة الذكية والدقيقة - تم تأمينها بـ toLowerCase() عشان تقرأ الكابيتال والسمول بدون أخطاء
   const total = reservations.length;
-  const confirmed = reservations.filter((r) => r.status === "confirmed").length;
-  const pending = reservations.filter((r) => r.status === "pending").length;
-  const cancelled = reservations.filter((r) => r.status === "cancelled").length;
 
+  const confirmed = reservations.filter(
+    (res) => res.status?.trim().toLowerCase() === "confirmed",
+  ).length;
+
+  const pending = reservations.filter(
+    (res) => res.status?.trim().toLowerCase() === "pending",
+  ).length;
+
+  const cancelled = reservations.filter(
+    (res) => res.status?.trim().toLowerCase() === "cancelled",
+  ).length;
+
+  // 💰 حساب إجمالي إيرادات العيادة للكشوفات المؤكدة فقط بشكل آمن تماماً
   const totalEarnings = reservations
-    .filter((r) => r.status === "confirmed" || r.status === "completed")
-    .reduce((sum, r) => sum + r.price, 0);
+    .filter((res) => res.status?.trim().toLowerCase() === "confirmed")
+    .reduce((sum, res) => sum + (Number(res.price) || 0), 0);
 
+  // كروت العدادات بتصميم جلاسمورفيزم متناسق للعيادة الطبية
   const cardsData = [
     {
-      title: t.totalReservations,
+      title: lang === "ar" ? "إجمالي الحجوزات" : "Total Bookings",
       value: total,
-      icon: <CalendarDays size={24} />,
-      color: "#6366f1",
+      icon: <Calendar size={22} color="#00e5ff" />,
+      borderColor: "rgba(0, 229, 255, 0.5)",
     },
     {
-      title: t.confirmedReservations,
+      title: lang === "ar" ? "حجوزات مؤكدة" : "Confirmed",
       value: confirmed,
-      icon: <CheckCircle2 size={24} />,
-      color: "var(--primary)",
+      icon: <CheckCircle size={22} color="#00ff88" />,
+      borderColor: "rgba(0, 255, 136, 0.5)",
     },
     {
-      title: t.pendingReservations,
+      title: lang === "ar" ? "في الانتظار" : "Pending",
       value: pending,
-      icon: <Clock size={24} />,
-      color: "#eab308",
+      icon: <Clock size={22} color="#ffbb00" />,
+      borderColor: "rgba(255, 187, 0, 0.5)",
     },
     {
-      title: t.cancelledReservations,
+      title: lang === "ar" ? "حجوزات ملغاة" : "Cancelled",
       value: cancelled,
-      icon: <XCircle size={24} />,
-      color: "#ef4444",
+      icon: <XCircle size={22} color="#ff0055" />,
+      borderColor: "rgba(255, 0, 85, 0.5)",
     },
     {
-      title: t.totalEarnings,
-      value: `${totalEarnings} ${t.currency}`,
-      icon: <DollarSign size={24} />,
-      color: "#10b981",
+      title: lang === "ar" ? "إجمالي الإيرادات" : "Total Earnings",
+      value: `${totalEarnings} ${lang === "ar" ? "ج.م" : "EGP"}`,
+      icon: <DollarSign size={22} color="#9d4edd" />,
+      borderColor: "rgba(157, 78, 221, 0.5)",
     },
   ];
 
@@ -57,52 +71,56 @@ export default function StatsCards({ reservations }) {
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-        gap: "20px",
-        width: "100%",
-        marginBottom: "30px",
+        gap: "15px",
+        marginBottom: "25px",
       }}
     >
-      {cardsData.map((card, index) => (
+      {cardsData.map((card, idx) => (
         <div
-          key={index}
+          key={idx}
           className="glass-card"
           style={{
             padding: "20px",
+            borderRadius: "12px",
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderLeft: `4px solid ${card.color}`,
+            flexDirection: "column",
+            gap: "10px",
+            borderLeft: `4px solid ${card.borderColor}`,
+            position: "relative",
           }}
         >
-          <div>
-            <p
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span
               style={{
-                margin: "0 0 5px 0",
                 fontSize: "14px",
                 color: "var(--text-muted)",
+                fontWeight: "500",
               }}
             >
               {card.title}
-            </p>
-            <h3 style={{ margin: 0, fontSize: "24px", fontWeight: "bold" }}>
-              {card.value}
-            </h3>
-          </div>
-          <div
-            style={{
-              padding: "10px",
-              borderRadius: "50%",
-              backgroundColor: `${card.color}15`,
-              color: card.color,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+            </span>
             {card.icon}
           </div>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: "28px",
+              fontWeight: "bold",
+              color: "var(--text-main)",
+            }}
+          >
+            {card.value}
+          </h2>
         </div>
       ))}
     </div>
   );
 }
+
+export default StatsCards;

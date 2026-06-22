@@ -1,57 +1,57 @@
-import { useState, useEffect } from "react";
-import { X, Save } from "lucide-react";
+/* eslint-disable */
+import React, { useState, useEffect } from "react";
+import { X } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 
-export default function ReservationModal({
-  isOpen,
-  onClose,
-  onSave,
-  editData,
-}) {
+function ReservationModal({ isOpen, onClose, onSave, editData }) {
+  const { lang } = useLanguage();
+
   const [customerName, setCustomerName] = useState("");
-  const [service, setService] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
   const [price, setPrice] = useState("");
-  const [status, setStatus] = useState("pending");
+  // 🎯 متغير التاريخ بيبدأ تلقائياً بتاريخ النهاردة بالملي
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
-  // أول ما الـ Modal يفتح، لو فيه editData بنملا الحقول، لو مفيش بنخليها فاضية (إضافة جديدة)
   useEffect(() => {
     if (editData) {
-      setCustomerName(editData.customerName);
-      setService(editData.service);
-      setDate(editData.date);
-      setTime(editData.time);
-      setPrice(editData.price);
-      setStatus(editData.status);
+      setCustomerName(editData.customerName || "");
+      setPrice(editData.price || "");
+      // لو بنعمل تعديل لحجز قديم، بنجيب التاريخ بتاعه عشان يظهر في الخانة
+      setDate(editData.date || new Date().toISOString().split("T")[0]);
     } else {
       setCustomerName("");
-      setService("");
-      setDate("");
-      setTime("");
       setPrice("");
-      setStatus("pending");
+      setDate(new Date().toISOString().split("T")[0]);
     }
   }, [editData, isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // دالة معالجة الحفظ الموحدة
+  const handleSubmitAction = (e) => {
+    if (e) e.preventDefault(); // منع الريفريش لو جاي من الفورم
 
-    const formData = {
-      id: editData
-        ? editData.id
-        : `RES-${Math.floor(100 + Math.random() * 900)}`, // لو جديد بنعمله ID عشوائي
-      customerName,
-      service,
-      date,
-      time,
-      price: Number(price),
-      status,
+    // 1️⃣ التحقق من الاسم
+    if (!customerName.trim()) {
+      alert(
+        lang === "ar"
+          ? "من فضلك أدخل اسم المريض!"
+          : "Please enter patient name!",
+      );
+      return;
+    }
+
+    // 2️⃣ تجهيز البيانات لبعتها للـ App.jsx (مع إضافة متغير التاريخ المختار)
+    const reservationData = {
+      id: editData ? editData.id : null,
+      customerName: customerName.trim(),
+      movieTitle: editData?.movieTitle || "كشف طبي",
+      status: editData ? editData.status : "Pending",
+      price: parseFloat(price) || 0,
+      date: date, // 🎯 بيبعت التاريخ اللي نقيته بالملي (سواء النهاردة أو أثر رجعي)
     };
 
-    onSave(formData);
-    onClose();
+    // 3️⃣ تنفيذ الحفظ فوراً
+    onSave(reservationData);
   };
 
   return (
@@ -62,35 +62,37 @@ export default function ReservationModal({
         left: 0,
         width: "100%",
         height: "100%",
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
-        backdropFilter: "blur(8px)",
+        backgroundColor: "rgba(0, 0, 0, 0.7)",
+        backdropFilter: "blur(5px)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        zIndex: 1000,
-        padding: "20px",
+        zIndex: 9999,
       }}
     >
       <div
         className="glass-card"
         style={{
-          padding: "30px",
-          maxWidth: "500px",
           width: "100%",
+          maxWidth: "400px",
+          padding: "25px",
+          borderRadius: "15px",
           position: "relative",
+          border: "1px solid var(--border-color)",
+          zIndex: 10000,
         }}
       >
-        {/* زرار الإغلاق */}
         <button
           onClick={onClose}
           style={{
             position: "absolute",
-            top: "20px",
-            left: "20px",
+            top: "15px",
+            right: "15px",
             background: "none",
             border: "none",
-            color: "var(--text-muted)",
             cursor: "pointer",
+            color: "var(--text-muted)",
+            zIndex: 10001,
           }}
         >
           <X size={20} />
@@ -98,163 +100,141 @@ export default function ReservationModal({
 
         <h3
           style={{
-            color: "var(--primary)",
-            marginTop: 0,
             marginBottom: "20px",
+            color: "var(--primary)",
+            fontWeight: "bold",
           }}
         >
-          {editData ? "تعديل الحجز الحالي" : "إضافة حجز جديد"}
+          {editData
+            ? lang === "ar"
+              ? "تعديل بيانات المريض"
+              : "Edit Booking"
+            : lang === "ar"
+              ? "إضافة حجز مريض جديد"
+              : "New Patient Booking"}
         </h3>
 
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmitAction}
           style={{ display: "flex", flexDirection: "column", gap: "15px" }}
         >
+          {/* اسم المريض */}
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
             <label style={{ fontSize: "14px", color: "var(--text-muted)" }}>
-              اسم العميل
+              {lang === "ar" ? "اسم المريض" : "Patient Name"}
             </label>
             <input
               type="text"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              required
-              style={inputStyle}
+              placeholder={
+                lang === "ar" ? "اكتب اسم المريض..." : "Enter patient name..."
+              }
+              style={{
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color)",
+                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                color: "var(--text-main)",
+                outline: "none",
+              }}
             />
           </div>
 
+          {/* سعر الكشف */}
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
             <label style={{ fontSize: "14px", color: "var(--text-muted)" }}>
-              الخدمة / الصالة
+              {lang === "ar" ? "قيمة الكشف (EGP)" : "Fees (EGP)"}
             </label>
             <input
-              type="text"
-              value={service}
-              onChange={(e) => setService(e.target.value)}
-              required
-              style={inputStyle}
-              placeholder="مثال: حجز VIP - صالة 1"
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="0.00"
+              style={{
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color)",
+                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                color: "var(--text-main)",
+                outline: "none",
+              }}
             />
           </div>
 
-          <div style={{ display: "flex", gap: "15px" }}>
-            <div
+          {/* 🛠️ خانة اختيار تاريخ الحجز (بأثر رجعي أو مستقبلي) */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+            <label style={{ fontSize: "14px", color: "var(--text-muted)" }}>
+              {lang === "ar" ? "تاريخ الحجز" : "Reservation Date"}
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "5px",
-                flex: 1,
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color)",
+                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                color: "var(--text-main)",
+                outline: "none",
+                cursor: "pointer",
               }}
-            >
-              <label style={{ fontSize: "14px", color: "var(--text-muted)" }}>
-                التاريخ
-              </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-                style={inputStyle}
-              />
-            </div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "5px",
-                flex: 1,
-              }}
-            >
-              <label style={{ fontSize: "14px", color: "var(--text-muted)" }}>
-                الوقت
-              </label>
-              <input
-                type="text"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                required
-                style={inputStyle}
-                placeholder="مثال: 08:00 م"
-              />
-            </div>
+            />
           </div>
 
-          <div style={{ display: "flex", gap: "15px" }}>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "5px",
-                flex: 1,
-              }}
-            >
-              <label style={{ fontSize: "14px", color: "var(--text-muted)" }}>
-                السعر (ج.م)
-              </label>
-              <input
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-                style={inputStyle}
-              />
-            </div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "5px",
-                flex: 1,
-              }}
-            >
-              <label style={{ fontSize: "14px", color: "var(--text-muted)" }}>
-                الحالة
-              </label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                style={inputStyle}
-              >
-                <option value="pending">في الانتظار</option>
-                <option value="confirmed">مؤكدة</option>
-                <option value="completed">مكتملة</option>
-                <option value="cancelled">ملغاة</option>
-              </select>
-            </div>
-          </div>
-
-          <button
-            type="submit"
+          <div
             style={{
-              marginTop: "10px",
-              padding: "12px",
-              backgroundColor: "var(--primary)",
-              color: "#000",
-              border: "none",
-              borderRadius: "8px",
-              fontWeight: "bold",
-              cursor: "pointer",
               display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: "8px",
+              justifyContent: "flex-end",
+              gap: "10px",
+              marginTop: "10px",
             }}
           >
-            <Save size={18} /> {editData ? "حفظ التعديلات" : "تأكيد الحجز"}
-          </button>
+            <button
+              type="button"
+              onClick={onClose}
+              style={{
+                padding: "10px 15px",
+                borderRadius: "8px",
+                border: "1px solid var(--border-color)",
+                backgroundColor: "transparent",
+                color: "var(--text-main)",
+                cursor: "pointer",
+              }}
+            >
+              {lang === "ar" ? "إلغاء" : "Cancel"}
+            </button>
+
+            <button
+              type="submit"
+              onClick={handleSubmitAction}
+              style={{
+                padding: "10px 20px",
+                borderRadius: "8px",
+                border: "none",
+                backgroundColor: "var(--primary)",
+                color: "#000",
+                fontWeight: "bold",
+                cursor: "pointer",
+                pointerEvents: "auto",
+                position: "relative",
+                zIndex: 10002,
+              }}
+            >
+              {editData
+                ? lang === "ar"
+                  ? "تعديل الحجز"
+                  : "Save Changes"
+                : lang === "ar"
+                  ? "حفظ وتثبيت الحجز"
+                  : "Save Reservation"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
 }
 
-// ستايل موحد للإنبووتس جوه المودال
-const inputStyle = {
-  padding: "10px",
-  borderRadius: "8px",
-  border: "1px solid var(--border)",
-  background: "var(--background)",
-  color: "var(--text-main)",
-  outline: "none",
-  fontSize: "14px",
-};
+export default ReservationModal;
