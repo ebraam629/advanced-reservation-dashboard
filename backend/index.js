@@ -289,3 +289,6 @@ app.delete("/api/reservations/:id", (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`🌐 Server running on port ${PORT}`));
+
+// 🌟 ضيف السطر ده تحت الـ listen علطول 🌟
+export default app;
