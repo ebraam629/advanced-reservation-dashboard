@@ -15,7 +15,11 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 
 const sqlite = sqlite3.verbose();
-const dbPath = path.resolve(__dirname, "clinic.db");
+
+// تعديل المسار ليتوافق مع بيئة Vercel المحدودة
+const dbPath = process.env.VERCEL
+  ? path.join("/tmp", "clinic.db")
+  : path.resolve(__dirname, "clinic.db");
 const db = new sqlite.Database(dbPath, (err) => {
   if (err) {
     console.error("❌ فشل الاتصال بقاعدة البيانات:", err.message);
