@@ -72,49 +72,49 @@ function bootstrapDatabase() {
   });
 }
 // Endpoint لتغيير كلمة المرور
-app.put("/api/users/:id/change-password", async (req, res) => {
-  const userId = req.params.id;
-  const { oldPassword, newPassword } = req.body;
+// app.put("/api/users/:id/change-password", async (req, res) => {
+//   const userId = req.params.id;
+//   const { oldPassword, newPassword } = req.body;
 
-  try {
-    // 1. ابحث عن المستخدم في قاعدة البيانات (عدل السطر ده حسب الداتا بيز بتاعتك)
-    // مثال لو شغال بـ SQL (MySQL/PostgreSQL):
-    // const [users] = await db.execute('SELECT * FROM users WHERE id = ?', [userId]);
-    // const user = users[0];
+//   try {
+//     // 1. ابحث عن المستخدم في قاعدة البيانات (عدل السطر ده حسب الداتا بيز بتاعتك)
+//     // مثال لو شغال بـ SQL (MySQL/PostgreSQL):
+//     // const [users] = await db.execute('SELECT * FROM users WHERE id = ?', [userId]);
+//     // const user = users[0];
 
-    // بافتراض إنك لقيت المستخدم وجبته في متغير اسمه user:
-    if (!user) {
-      return res.status(404).json({ message: "المستخدم غير موجود!" });
-    }
+//     // بافتراض إنك لقيت المستخدم وجبته في متغير اسمه user:
+//     if (!user) {
+//       return res.status(404).json({ message: "المستخدم غير موجود!" });
+//     }
 
-    // 2. التأكد من كلمة المرور القديمة
-    // لو بتستخدم bcrypt لتشفير الباسورد:
-    // const isMatch = await bcrypt.compare(oldPassword, user.password);
+//     // 2. التأكد من كلمة المرور القديمة
+//     // لو بتستخدم bcrypt لتشفير الباسورد:
+//     // const isMatch = await bcrypt.compare(oldPassword, user.password);
 
-    // لو بتخزن الباسورد نص صريح (أو مقارنة عادية):
-    const isMatch = oldPassword === user.password;
+//     // لو بتخزن الباسورد نص صريح (أو مقارنة عادية):
+//     const isMatch = oldPassword === user.password;
 
-    if (!isMatch) {
-      return res.status(400).json({
-        message:
-          req.headers["accept-language"] === "ar"
-            ? "كلمة المرور القديمة غير صحيحة!"
-            : "Incorrect old password!",
-      });
-    }
+//     if (!isMatch) {
+//       return res.status(400).json({
+//         message:
+//           req.headers["accept-language"] === "ar"
+//             ? "كلمة المرور القديمة غير صحيحة!"
+//             : "Incorrect old password!",
+//       });
+//     }
 
-    // 3. تحديث كلمة المرور الجديدة في قاعدة البيانات
-    // لو بتشفر الباسورد الجديد: const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+//     // 3. تحديث كلمة المرور الجديدة في قاعدة البيانات
+//     // لو بتشفر الباسورد الجديد: const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-    // أمر التحديث في قاعدة البيانات (عدله حسب نوع الداتا بيز عندك):
-    // await db.execute('UPDATE users SET password = ? WHERE id = ?', [newPassword, userId]);
+//     // أمر التحديث في قاعدة البيانات (عدله حسب نوع الداتا بيز عندك):
+//     // await db.execute('UPDATE users SET password = ? WHERE id = ?', [newPassword, userId]);
 
-    return res.status(200).json({ message: "تم تغيير كلمة المرور بنجاح!" });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "حدث خطأ في السيرفر!" });
-  }
-});
+//     return res.status(200).json({ message: "تم تغيير كلمة المرور بنجاح!" });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: "حدث خطأ في السيرفر!" });
+//   }
+// });
 
 // API تسجيل الدخول
 app.post("/api/auth/signin", (req, res) => {
