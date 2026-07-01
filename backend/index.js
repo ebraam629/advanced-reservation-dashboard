@@ -12,6 +12,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(cors({ origin: "*" }));
+app.options("*", (req, res) => {
+  res.status(200).send("OK");
+});
 app.use(express.json());
 
 const sqlite = sqlite3.verbose();
