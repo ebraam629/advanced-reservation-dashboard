@@ -73,13 +73,16 @@ function App() {
     if (!user || !user.id) return;
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/reservations", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "user-id": user.id,
+      const response = await fetch(
+        "https://advanced-reservation-dashboard-pvqn.vercel.app/api/reservations",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "user-id": user.id,
+          },
         },
-      });
+      );
       if (response.ok) {
         const dbData = await response.json();
         const mappedData = dbData.map((res) => ({
@@ -112,7 +115,7 @@ function App() {
     setNameError("");
     try {
       const response = await fetch(
-        `http://localhost:5000/api/users/${user.id}`,
+        `https://advanced-reservation-dashboard-pvqn.vercel.app/api/users/${user.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -185,7 +188,7 @@ function App() {
     setPasswordLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:5000/api/users/${user.id}/change-password`,
+        `https://advanced-reservation-dashboard-pvqn.vercel.app/api/users/${user.id}/change-password`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -231,7 +234,7 @@ function App() {
     if (!user || !user.id) return;
     try {
       const response = await fetch(
-        `http://localhost:5000/api/reservations/${id}`,
+        `https://advanced-reservation-dashboard-pvqn.vercel.app/api/reservations/${id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -264,7 +267,7 @@ function App() {
       const targetId = data.id || selectedEditData.id;
       try {
         const response = await fetch(
-          `http://localhost:5000/api/reservations/${targetId}`,
+          `https://advanced-reservation-dashboard-pvqn.vercel.app/api/reservations/${targetId}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -280,11 +283,14 @@ function App() {
       }
     } else {
       try {
-        const response = await fetch("http://localhost:5000/api/reservations", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        const response = await fetch(
+          "https://advanced-reservation-dashboard-pvqn.vercel.app/api/reservations",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          },
+        );
         if (response.ok) {
           fetchReservations();
           setIsModalOpen(false);
@@ -303,7 +309,7 @@ function App() {
     ) {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/reservations/${id}`,
+          `https://advanced-reservation-dashboard-pvqn.vercel.app/api/reservations/${id}`,
           {
             method: "DELETE",
           },

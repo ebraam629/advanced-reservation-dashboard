@@ -95,8 +95,8 @@ function LoginPage() {
     setLoading(true);
 
     const url = isSignUp
-      ? "http://localhost:5000/api/auth/signup"
-      : "http://localhost:5000/api/auth/signin";
+      ? "https://advanced-reservation-dashboard-pvqn.vercel.app/api/auth/signup"
+      : "https://advanced-reservation-dashboard-pvqn.vercel.app/api/auth/signin";
 
     const payload = isSignUp
       ? { name, username: email, password }
@@ -132,7 +132,7 @@ function LoginPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/users/${user.id}`,
+        `https://advanced-reservation-dashboard-pvqn.vercel.app/api/users/${user.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

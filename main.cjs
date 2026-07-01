@@ -30,7 +30,7 @@ function createWindow() {
   });
 
   // التحميل بعد ما نضمن إن السيرفر بدأ يقوم
-  mainWindow.loadURL("http://localhost:5000"); // أو مسار الـ Frontend بتاعك
+  mainWindow.loadURL("https://advanced-reservation-dashboard.vercel.app");
 }
 
 // لما الأبليكيشن يجهز، شغل السيرفر وافتح الشاشة
