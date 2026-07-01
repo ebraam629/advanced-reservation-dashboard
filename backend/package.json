@@ -3,6 +3,9 @@
   "module": "index.js",
   "type": "module",
   "private": true,
+  "engines": {
+    "node": "18.x"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
