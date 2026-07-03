@@ -4,10 +4,12 @@ import { createContext, useContext, useState, useEffect } from "react";
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("clinic_user");
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  // 🚪 تصفير الجلسة القديمة أول ما الموقع يفتح خالص عشان يجبره يدخل على الـ Login
+  useEffect(() => {
+    localStorage.removeItem("clinic_user");
+  }, []);
+
+  const [user, setUser] = useState(null); // بيبدأ دايماً بـ null عشان يقف في الـ Login
 
   const login = (userData) => {
     setUser(userData);

@@ -674,7 +674,7 @@ function LoginPage() {
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder={isRtl ? "د. إبرام رامي" : "Dr. Ebraam"}
+                      placeholder={isRtl ? "د. أحمد " : "Dr. Ahmed"}
                       style={inputStyle}
                     />
                   </div>

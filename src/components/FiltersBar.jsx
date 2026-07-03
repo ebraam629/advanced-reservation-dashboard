@@ -80,21 +80,57 @@ function FiltersBar({
           alignItems: "center",
         }}
       >
-        {/* خانة التاريخ */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <Calendar size={18} color="var(--primary)" />
+        {/* خانة التاريخ الزجاجية المنظمة والذكية */}
+        <div
+          onClick={() =>
+            document.getElementById("hidden-date-picker").showPicker()
+          }
+          style={{
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            padding: "8px 14px",
+            borderRadius: "8px",
+            border: "1px solid var(--border-color)",
+            backgroundColor: "rgba(255, 255, 255, 0.05)",
+            cursor: "pointer",
+            userSelect: "none",
+          }}
+        >
+          {/* الأيقونة الشيك الثابتة */}
+          <Calendar
+            size={18}
+            color="var(--primary)"
+            style={{ pointerEvents: "none" }}
+          />
+
+          {/* نص التاريخ المنسق والنظيف */}
+          <span
+            style={{
+              fontSize: "14px",
+              fontWeight: "500",
+              color: "var(--text-main)",
+              pointerEvents: "none",
+            }}
+          >
+            {dateFilter}
+          </span>
+
+          {/* الـ input الحقيقي مخفي تماماً لمنع عيوب المتصفحات */}
           <input
+            id="hidden-date-picker"
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
             style={{
-              padding: "8px 12px",
-              borderRadius: "8px",
-              border: "1px solid var(--border-color)",
-              backgroundColor: "rgba(255, 255, 255, 0.05)",
-              color: "var(--text-main)",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              opacity: 0, // مخفي 100% لكن قابل للضغط والتفاعل
               cursor: "pointer",
-              outline: "none",
             }}
           />
         </div>
@@ -104,13 +140,15 @@ function FiltersBar({
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           style={{
-            backgroundColor: "#ffffff", // خليناه أبيض عشان يليق مع لوحة التحكم البيضاء
-            color: "#0f172a", // لون النص الأساسي للـ select
+            backgroundColor: "#ffffff",
+            color: "#0f172a",
             padding: "8px 12px",
             borderRadius: "8px",
             border: "1px solid var(--border-color)",
             outline: "none",
             cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "500",
           }}
         >
           <option value="all" style={optionStyle}>

@@ -8,6 +8,17 @@ import StatsCards from "./components/StatsCards";
 import FiltersBar from "./components/FiltersBar";
 import ReservationsTable from "./components/ReservationsTable";
 import ReservationModal from "./components/ReservationModal";
+import * as XLSX from "xlsx"; // 🌟 استدعاء مكتبة الإكسيل
+import { FileSpreadsheet, FileText } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 import {
   Sun,
   Moon,
@@ -45,6 +56,9 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
 
+  // 🎯 ستيتس مراقبة حالة السيرفر والإنترنت
+  const [networkStatus, setNetworkStatus] = useState("connecting");
+
   // 🎯 ستيتس تعديل الاسم
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState(
@@ -61,11 +75,27 @@ function App() {
   const [passwordError, setPasswordError] = useState("");
   const [passwordSuccess, setPasswordSuccess] = useState("");
 
-  // تأثير لجلب الحجوزات وتجهيز الاسم مرة واحدة عند تحميل المستخدم أو تغير المعرف
+  // تأثير لجلب الحجوزات وتجهيز الاسم ومراقبة الشبكة
   useEffect(() => {
     if (user && user.id) {
       fetchReservations();
       setNewName(user.name || "Ebraaaaam Emiel Farouk");
+
+      const checkServer = async () => {
+        try {
+          const res = await fetch(
+            "https://advanced-reservation-dashboard-pvqn.vercel.app/api/reservations",
+          );
+          if (res.ok) setNetworkStatus("online");
+          else setNetworkStatus("offline");
+        } catch {
+          setNetworkStatus("offline");
+        }
+      };
+
+      checkServer();
+      const interval = setInterval(checkServer, 10000);
+      return () => clearInterval(interval);
     }
   }, [user?.id]);
 
@@ -334,8 +364,83 @@ function App() {
     return matchesSearch && matchesStatus && matchesDate;
   });
 
-  if (!user) return <LoginPage />;
+  // 🟢 دالة تصدير البيانات إلى شيت Excel منظم
+  const exportToExcel = () => {
+    if (filteredReservations.length === 0) {
+      alert(lang === "ar" ? "لا توجد بيانات لتصديرها!" : "No data to export!");
+      return;
+    }
 
+    const dataToExport = filteredReservations.map((res, index) => ({
+      [lang === "ar" ? "م" : "No."]: index + 1,
+      [lang === "ar" ? "اسم المريض" : "Patient Name"]: res.customerName,
+      [lang === "ar" ? "نوع الكشف" : "Service"]: res.movieTitle,
+      [lang === "ar" ? "التاريخ" : "Date"]: res.date,
+      [lang === "ar" ? "الحالة" : "Status"]: res.status,
+      [lang === "ar" ? "قيمة الكشف" : "Fees"]: `${res.price} EGP`,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      lang === "ar" ? "الحجوزات" : "Reservations",
+    );
+    XLSX.writeFile(workbook, `Clinic_Report_${dateFilter}.xlsx`);
+  };
+
+  // 🔴 دالة الطباعة الاحترافية الداعمة للعربي
+  const exportToPDF = () => {
+    if (filteredReservations.length === 0) {
+      alert(lang === "ar" ? "لا توجد بيانات لطباعتها!" : "No data to print!");
+      return;
+    }
+    window.print();
+  };
+
+  // 📊 دالة حساب الحجوزات الحقيقية لكل يوم من أيام الأسبوع (جوه الـ Component ومظبوطة)
+  const getWeeklyChartData = () => {
+    const daysNameAr = [
+      "الأحد",
+      "الإثنين",
+      "الثلاثاء",
+      "الأربعاء",
+      "الخميس",
+      "الجمعة",
+      "السبت",
+    ];
+    const counts = {
+      السبت: 0,
+      الأحد: 0,
+      الإثنين: 0,
+      الثلاثاء: 0,
+      الأربعاء: 0,
+      الخميس: 0,
+      الجمعة: 0,
+    };
+
+    reservations.forEach((res) => {
+      if (!res.date) return;
+      const dateObj = new Date(res.date);
+      const dayName = daysNameAr[dateObj.getDay()];
+      if (counts[dayName] !== undefined) {
+        counts[dayName] += 1;
+      }
+    });
+
+    return [
+      { name: "السبت", الحجوزات: counts["السبت"] },
+      { name: "الأحد", الحجوزات: counts["الأحد"] },
+      { name: "الإثنين", الحجوزات: counts["الإثنين"] },
+      { name: "الثلاثاء", الحجوزات: counts["الثلاثاء"] },
+      { name: "الأربعاء", الحجوزات: counts["الأربعاء"] },
+      { name: "الخميس", الحجوزات: counts["الخميس"] },
+      { name: "الجمعة", الحجوزات: counts["الجمعة"] },
+    ];
+  };
+
+  if (!user) return <LoginPage />;
   const isRtl = lang === "ar";
   const isDark = theme === "dark";
 
@@ -345,6 +450,7 @@ function App() {
     bgSidebar: isDark ? "rgba(15, 23, 42, 0.95)" : "rgba(241, 245, 249, 0.98)",
     bgInput: isDark ? "rgba(0, 0, 0, 0.3)" : "rgba(255, 255, 255, 0.9)",
     border: isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(15, 23, 42, 0.1)",
+    cardBg: isDark ? "rgba(255, 255, 255, 0.03)" : "#ffffff",
   };
 
   return (
@@ -581,6 +687,63 @@ function App() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+          {/* مؤشر حالة اتصال السيرفر الذكي */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "rgba(255,255,255,0.03)",
+              padding: "6px 12px",
+              borderRadius: "20px",
+              border: `1px solid ${colors.border}`,
+            }}
+          >
+            <span
+              style={{
+                display: "inline-block",
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                backgroundColor:
+                  networkStatus === "online"
+                    ? "#10b981"
+                    : networkStatus === "connecting"
+                      ? "#f59e0b"
+                      : "#ef4444",
+                boxShadow:
+                  networkStatus === "online"
+                    ? "0 0 8px #10b981"
+                    : networkStatus === "connecting"
+                      ? "0 0 8px #f59e0b"
+                      : "0 0 8px #ef4444",
+                animate:
+                  networkStatus === "connecting"
+                    ? "pulse 1.5s infinite"
+                    : "none",
+              }}
+            />
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: "bold",
+                color: colors.textMuted,
+              }}
+            >
+              {networkStatus === "online"
+                ? lang === "ar"
+                  ? "متصل"
+                  : "Online"
+                : networkStatus === "connecting"
+                  ? lang === "ar"
+                    ? "جاري الاتصال"
+                    : "Connecting"
+                  : lang === "ar"
+                    ? "غير متصل"
+                    : "Offline"}
+            </span>
+          </div>
+
           <span style={{ fontSize: "14px", color: colors.textMuted }}>
             {t.welcome}،{" "}
             <strong style={{ color: "var(--primary)" }}>
@@ -647,9 +810,53 @@ function App() {
                 style={{
                   display: "flex",
                   justifyContent: "flex-end",
+                  alignItems: "center",
+                  gap: "10px",
                   marginBottom: "15px",
                 }}
               >
+                <button
+                  onClick={exportToExcel}
+                  style={{
+                    padding: "12px 16px",
+                    backgroundColor: "#10b981",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    boxShadow: "0 4px 12px rgba(16, 185, 129, 0.2)",
+                  }}
+                  title={lang === "ar" ? "تصدير إلى إكسيل" : "Export to Excel"}
+                >
+                  <FileSpreadsheet size={18} />
+                  {lang === "ar" ? "إكسيل" : "Excel"}
+                </button>
+
+                <button
+                  onClick={exportToPDF}
+                  style={{
+                    padding: "12px 16px",
+                    backgroundColor: "#ef4444",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    boxShadow: "0 4px 12px rgba(239, 68, 68, 0.2)",
+                  }}
+                  title={lang === "ar" ? "تصدير إلى PDF" : "Export to PDF"}
+                >
+                  <FileText size={18} />
+                  {lang === "ar" ? "طباعة PDF" : "PDF"}
+                </button>
+
                 <button
                   onClick={() => {
                     setSelectedEditData(null);
@@ -704,6 +911,104 @@ function App() {
                 onToggleStatus={handleToggleStatus}
               />
             )}
+
+            {/* الرسم البياني الحقيقي والمربوط بالدالة */}
+            <div
+              style={{
+                marginTop: "30px",
+                padding: "20px",
+                borderRadius: "12px",
+                backgroundColor: colors.cardBg,
+                border: `1px solid ${colors.border}`,
+                boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              <h3
+                style={{
+                  margin: "0 0 20px 0",
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: "8px",
+                    height: "8px",
+                    borderRadius: "50%",
+                    backgroundColor: "var(--primary)",
+                  }}
+                />
+                {lang === "ar"
+                  ? "معدل الحجوزات الأسبوعي للعيادة"
+                  : "Weekly Clinic Bookings Flow"}
+              </h3>
+              <div style={{ width: "100%", height: "260px" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={getWeeklyChartData()}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={
+                        isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"
+                      }
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="name"
+                      stroke={colors.textMuted}
+                      fontSize={12}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      stroke={colors.textMuted}
+                      fontSize={12}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: isDark ? "#1e293b" : "#ffffff",
+                        borderColor: colors.border,
+                        borderRadius: "8px",
+                        color: colors.textMain,
+                      }}
+                    />
+                    <Bar
+                      dataKey="الحجوزات"
+                      fill="url(#clinicNeonGradient)"
+                      radius={[6, 6, 0, 0]}
+                      maxBarSize={45}
+                    />
+                    <defs>
+                      <linearGradient
+                        id="clinicNeonGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          stopColor="var(--primary)"
+                          stopOpacity={0.9}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor="var(--primary)"
+                          stopOpacity={0.15}
+                        />
+                      </linearGradient>
+                    </defs>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </>
         )}
 
@@ -860,7 +1165,7 @@ function App() {
               >
                 <span
                   style={{
-                    color: colors.textMuted,
+                    colors: colors.textMuted,
                     display: "flex",
                     alignItems: "center",
                     gap: "8px",
@@ -882,7 +1187,7 @@ function App() {
               >
                 <span
                   style={{
-                    color: colors.textMuted,
+                    colors: colors.textMuted,
                     display: "flex",
                     alignItems: "center",
                     gap: "8px",
@@ -909,7 +1214,6 @@ function App() {
               width: "100%",
             }}
           >
-            {/* 1️⃣ إعدادات النظام الأساسية (بقت فوق) */}
             <div
               className="glass-card"
               style={{
@@ -1009,7 +1313,6 @@ function App() {
               </div>
             </div>
 
-            {/* 2️⃣ كامبوننت تغيير كلمة المرور (بقت تحت) */}
             <div
               className="glass-card"
               style={{
